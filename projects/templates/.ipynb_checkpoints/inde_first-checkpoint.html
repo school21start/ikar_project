@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Industrial AI Inspection</title>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="video-section">
+
+        <div class="header">
+
+            <div>
+                <div class="title">
+                    Industrial AI Inspection
+                </div>
+
+                <div class="subtitle">
+                    Realtime defect detection system
+                </div>
+            </div>
+
+            <div class="clock"
+                 id="clock">
+            </div>
+
+        </div>
+
+        <div class="video-card">
+
+            <img class="video-stream"
+                 src="/video_feed">
+
+            <div class="overlay-top">
+
+                <div class="pill">
+                    <span class="status-dot"></span>
+                    CAMERA ONLINE
+                </div>
+
+                <div class="pill">
+                    YOLO ENGINE ACTIVE
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="sidebar">
+
+        <div class="panel">
+
+            <div class="panel-title">
+                System Status
+            </div>
+
+            <div class="big-status ok"
+                 id="system-status">
+                OK
+            </div>
+
+            <div id="defect-text">
+                No defects detected
+            </div>
+
+            <div class="alert-box"
+                 id="alert-box">
+
+                <div class="alert-title">
+                    ATTENTION
+                </div>
+
+                <div id="alert-message"></div>
+
+            </div>
+
+        </div>
+
+        <div class="panel">
+
+            <div class="panel-title">
+                Realtime Metrics
+            </div>
+
+            <div class="metric">
+                <div class="metric-name">FPS</div>
+                <div class="metric-value"
+                     id="fps">0</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-name">Confidence</div>
+                <div class="metric-value"
+                     id="confidence-text">0%</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-name">Camera</div>
+                <div class="metric-value">ONLINE</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-name">Inference Engine</div>
+                <div class="metric-value">ACTIVE</div>
+            </div>
+
+            <div class="confidence-bar">
+                <div class="confidence-fill"
+                     id="confidence-fill"></div>
+            </div>
+
+        </div>
+
+        <div class="panel">
+
+            <div class="panel-title">
+                System Info
+            </div>
+
+            <div class="metric">
+                <div class="metric-name">Resolution</div>
+                <div class="metric-value">1280×720</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-name">Model</div>
+                <div class="metric-value">YOLO TensorRT</div>
+            </div>
+
+            <div class="metric">
+                <div class="metric-name">Device</div>
+                <div class="metric-value">GPU</div>
+            </div>
+
+        </div>
+
+        <div class="footer-note">
+            Industrial Vision System • Realtime Inspection
+        </div>
+
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель ИИ-Детекции Дефектов</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Подключение локального шрифта */
+        @font-face {
+            font-family: 'CustomFont'; /* Вы можете поменять название на реальное */
+            /* Сначала браузер попробует загрузить WOFF (он лучше для веб), если не выйдет - OTF */
+            src: url('/static/fonts/font.woff') format('woff'),
+                 url('/static/fonts/font.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        :root {
+            --bg-color: #050505;
+            --panel-bg: rgba(20, 20, 25, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #8b8b93;
+            --accent-glow: rgba(0, 195, 255, 0.15);
+            --color-ok: #00ff88;
+            --color-error: #ff3366;
+            --color-accent: #00c3ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'CustomFont', 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Фоновые "жидкие" свечения (Liquid effect) */
+        .bg-glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.5;
+            animation: float 10s infinite alternate ease-in-out;
+        }
+        .glow-1 {
+            width: 40vw; height: 40vw;
+            background: linear-gradient(to right, #001133, #0044ff);
+            top: -10%; left: -10%;
+        }
+        .glow-2 {
+            width: 30vw; height: 30vw;
+            background: linear-gradient(to right, #330033, #ff0066);
+            bottom: -10%; right: -5%;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 30px) scale(1.1); }
+        }
+
+        header {
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(5, 5, 5, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 28px; /* Увеличили с 24px */
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #fff, #8b8b93);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--color-accent);
+        }
+
+        .company-logo {
+            height: 60px; /* Высота логотипа */
+            width: auto;
+            margin-right: 12px;
+            /* Убрал mix-blend-mode, так как у нас теперь PNG с прозрачным фоном */
+            
+            /* ЕЩЕ БОЛЕЕ МОЩНОЕ белое свечение вокруг логотипа */
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 1))
+                    drop-shadow(0 0 20px rgba(255, 255, 255, 0.9))
+                    drop-shadow(0 0 40px rgba(255, 255, 255, 0.6))
+                    drop-shadow(0 0 60px rgba(255, 255, 255, 0.4)); 
+            
+            /* Альтернативный вариант (если логотип СЛИШКОМ темный, можно сделать его полностью белым): */
+            /* filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(255,255,255,0.5)); */
+        }
+
+        .second-logo {
+            margin-right: 16px; /* Отступ справа от второго лого (перед точкой) */
+            margin-left: 0;
+        }
+
+        .container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 24px;
+            padding: 32px 40px;
+            max-width: 1800px;
+            margin: 0 auto;
+            width: 100%;
+            z-index: 1;
+        }
+
+        /* Панели с эффектом Glassmorphism */
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+            aspect-ratio: 16/9;
+        }
+
+        .video-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 16px; left: 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .badge {
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 16px; /* Чуть увеличили отступы */
+            border-radius: 20px;
+            font-size: 14px; /* Увеличили с 12px */
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Увеличили с 6px */
+        }
+
+        .badge-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--color-ok);
+            box-shadow: 0 0 8px var(--color-ok);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--color-accent);
+            border-radius: 4px 0 0 4px;
+        }
+
+        .stat-title {
+            color: var(--text-muted);
+            font-size: 15px; /* Увеличили с 13px */
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px; /* Увеличили с 8px */
+        }
+
+        .stat-value {
+            font-size: 34px; /* Увеличили с 28px */
+            font-weight: 700;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .stat-unit {
+            font-size: 16px; /* Увеличили с 14px */
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* Специфичные цвета карточек */
+        .card-status::before { background: var(--color-ok); transition: background 0.3s; }
+        .card-status.has-defect::before { background: var(--color-error); }
+        .card-status.has-defect .stat-value { color: var(--color-error); text-shadow: 0 0 15px rgba(255,51,102,0.4); }
+        .card-status:not(.has-defect) .stat-value { color: var(--color-ok); text-shadow: 0 0 15px rgba(0,255,136,0.4); }
+
+        .defects-list {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .defect-tag {
+            background: rgba(255,51,102,0.1);
+            border: 1px solid rgba(255,51,102,0.3);
+            color: #ff3366;
+            padding: 6px 12px; /* Чуть увеличили отступы */
+            border-radius: 6px;
+            font-size: 14px; /* Увеличили с 12px */
+            font-weight: 600;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+
+    <header>
+        <div class="logo">
+            <img src="/static/images/logo_r.png" alt="Company Logo" class="company-logo">
+            <!-- Второй логотип теперь между первым лого и текстом -->
+            <img src="/static/images/logo_susu.png" alt="Second Logo" class="company-logo second-logo">
+            <div class="logo-dot"></div>
+            ВИЗУАЛЬНЫЙ КОНТРОЛЬ
+        </div>
+        <div class="badge" style="border-color: rgba(0,195,255,0.3);">
+            <div class="badge-dot" style="background: var(--color-accent); box-shadow: 0 0 8px var(--color-accent);"></div>
+            НЕЙРОСЕТЬ АКТИВНА
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="glass-panel main-panel">
+            <div class="video-container">
+                <div class="video-overlay">
+                    <div class="badge">
+                        <div class="badge-dot"></div>
+                        ПРЯМОЙ ЭФИР
+                    </div>
+                </div>
+                <!-- Источник потока -->
+                <img id="video-stream" src="/video_feed" alt="Camera Stream">
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="stat-card card-status" id="status-card">
+                <div class="stat-title">Статус системы</div>
+                <div class="stat-value" id="val-status">НОРМА</div>
+                <div class="defects-list" id="defects-container">
+                    <!-- Теги дефектов будут здесь -->
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Уверенность ИИ</div>
+                <div class="stat-value"><span id="val-conf">0.00</span><span class="stat-unit">%</span></div>
+            </div>
+
+            <div class="stat-card" style="--color-accent: #a020f0;">
+                <div class="stat-title">Скорость обработки</div>
+                <div class="stat-value"><span id="val-fps">0</span><span class="stat-unit">кадр/с</span></div>
+            </div>
+            
+            <div class="stat-card" style="--color-accent: #8b8b93;">
+                <div class="stat-title">Оборудование</div>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 16px;"> <!-- Увеличили с 14px -->
+                        <span style="color: var(--text-muted)">Камера:</span>
+                        <span style="color: var(--color-ok)" id="val-cam">ОНЛАЙН</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 16px;"> <!-- Увеличили с 14px -->
+                        <span style="color: var(--text-muted)">Нейросеть:</span>
+                        <span style="color: var(--color-ok)" id="val-engine">АКТИВНА</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Обновление данных с сервера
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                
+                // Элементы DOM
+                const statusCard = document.getElementById('status-card');
+                const statusVal = document.getElementById('val-status');
+                const confVal = document.getElementById('val-conf');
+                const fpsVal = document.getElementById('val-fps');
+                const defectsContainer = document.getElementById('defects-container');
+
+                // Обновление простых значений
+                confVal.textContent = (data.confidence * 100).toFixed(0);
+                fpsVal.textContent = data.fps;
+
+                // Обновление статуса и стилей
+                if (data.status !== 'OK') {
+                    statusCard.classList.add('has-defect');
+                    statusVal.textContent = 'ДЕФЕКТ ОБНАРУЖЕН';
+                    
+                    // Обновляем теги дефектов
+                    defectsContainer.innerHTML = '';
+                    data.defects.forEach(defect => {
+                        const tag = document.createElement('div');
+                        tag.className = 'defect-tag';
+                        tag.textContent = defect.toUpperCase();
+                        defectsContainer.appendChild(tag);
+                    });
+                } else {
+                    statusCard.classList.remove('has-defect');
+                    statusVal.textContent = 'НОРМА';
+                    defectsContainer.innerHTML = '';
+                }
+
+            } catch (error) {
+                console.error('Ошибка получения статуса:', error);
+            }
+        }
+
+        // Запрашиваем статус 2 раза в секунду
+        setInterval(fetchStatus, 500);
+    </script>
+</body>
+</html>
